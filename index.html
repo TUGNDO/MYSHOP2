@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao diện Cửa hàng - 500 Sản Phẩm</title>
+    <style>
+        /* --- RESET & BASIC STYLES --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* --- TOP ANNOUNCEMENT BAR --- */
+        .top-banner {
+            background-color: #000000;
+            color: #ffffff;
+            text-align: center;
+            padding: 8px 10px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* --- HEADER & NAVIGATION --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            border-bottom: 1px solid #f0f0f0;
+            height: 80px; /* Cố định độ cao header để không bị giật lag khi load ảnh */
+        }
+
+        /* ĐÃ SỬA: KHUNG CHỪA SẴN KHÔNG GIAN CHO LOGO TẢI LÊN */
+        .logo-box-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-width: 150px; /* Chừa sẵn chiều rộng tối thiểu cho logo */
+            height: 45px;     /* Chừa sẵn chiều cao cho logo */
+            background-color: transparent; /* Hoặc để #fafafa nếu muốn thấy khung mờ lúc chưa có ảnh */
+            overflow: hidden;
+        }
+
+        .logo-img {
+            height: 100%;    /* Ăn khớp 100% chiều cao của khung chừa sẵn */
+            width: auto;     /* Tự động co giãn chiều rộng để không méo logo */
+            object-fit: contain;
+        }
+
+        /* Mẹo ẩn icon ảnh vỡ nếu chưa kịp tải file lên */
+        .logo-img:not([src]), .logo-img[src="Lala.png"] {
+            visibility: hidden;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .nav-links a.active {
+            font-weight: bold;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* --- CATEGORY HERO BANNER --- */
+        .category-title-banner {
+            background-color: #0a2240;
+            color: #ffffff;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .category-title-banner h1 {
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 400;
+        }
+
+        /* --- FILTER & SORT TOOLBAR --- */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .view-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .view-dot {
+            width: 14px;
+            height: 14px;
+            background-color: #333;
+            display: inline-block;
+        }
+
+        .filter-btn, .sort-select {
+            background: none;
+            border: none;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        /* --- PRODUCT GRID --- */
+        .product-container {
+            padding: 40px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            column-gap: 20px;
+            row-gap: 40px;
+        }
+
+        .product-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-container {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            background-color: #f6f6f6;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        /* CSS CHO KÍNH LÚP (ZOOM LENS) */
+        .zoom-lens {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            width: 120px;  
+            height: 120px; 
+            visibility: hidden;
+            cursor: crosshair;
+            background-repeat: no-repeat;
+            box-shadow: 0 0 8px rgba(0,0,0,0.2);
+            pointer-events: none;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 2px;
+        }
+
+        .product-info {
+            margin-top: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #333;
+        }
+
+        /* --- PAGINATION BUTTONS --- */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 0 50px 0;
+            flex-wrap: wrap;
+            padding: 0 40px;
+        }
+
+        .page-btn {
+            background-color: #ffffff;
+            border: 1px solid #e5e5e5;
+            color: #000000;
+            padding: 8px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            border-color: #000000;
+        }
+
+        .page-btn.active {
+            background-color: #000000;
+            color: #ffffff;
+            border-color: #000000;
+        }
+
+        .page-btn:disabled {
+            background-color: #f5f5f5;
+            color: #ccc;
+            border-color: #e5e5e5;
+            cursor: not-allowed;
+        }
+        
+
+        .product-info {
+    margin-top: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #333;
+}
+
+/* --- ĐOẠN CSS THÊM MỚI: NÚT LIÊN HỆ GỌN GÀNG, THẨM MỸ --- */
+.contact-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    border-bottom: 1px solid #ccc; /* Tạo đường gạch chân thanh mảnh thay vì gạch mặc định */
+    padding-bottom: 2px;
+    align-self: flex-start; /* Giữ nút gọn ở góc trái, không bị kéo dài hết hàng */
+    transition: all 0.2s ease;
+}
+
+.contact-link:hover {
+    color: #000;
+    border-bottom-color: #000; /* Di chuột vào sẽ đậm lên nhìn rất chuyên nghiệp */
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="top-banner"></div>
+
+    <header class="header">
+        <!-- ĐÃ CHỪA SẴN Ô TRỐNG KHÔNG GIAN BẢO VỆ CHO LOGO -->
+        <a href="#" class="logo-box-placeholder">
+            <img src="lala.png" alt="Lala Fashion Logo" class="logo-img">
+        </a>
+        
+        <ul class="nav-links"></ul>
+        <div class="header-icons">
+            <button class="icon-btn">👤</button>
+            <button class="icon-btn">🔍</button>
+            <button class="icon-btn">🛍️</button>
+        </div>
+    </header>
+
+    <section class="category-title-banner">
+        <h1>PRODUCTS</h1>
+    </section>
+
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div class="view-options"><span class="view-dot"></span><span class="view-dot"></span></div>
+            <button class="filter-btn">Filter</button>
+        </div>
+        <div class="toolbar-right">
+            <select class="sort-select">
+                <option>Sort By</option>
+            </select>
+        </div>
+    </div>
+
+    <main class="product-container">
+        <div class="product-grid" id="productGrid"></div>
+    </main>
+
+    <div class="pagination" id="pagination"></div>
+
+    <script>
+    const totalImages = 500;   
+const itemsPerPage = 50;   
+let currentPage = 1;
+
+const imageList = [];
+for (let i = 1; i <= totalImages; i++) {
+    
+    // ĐIỀN CÁC SỐ ẢNH ÔNG ĐÃ XÓA VÀO ĐÂY (Ví dụ ông đã xóa ảnh 5, 12, 20)
+    if (i === 5 || i === 12 || i === 20) {
+        continue; // Bỏ qua hoàn toàn, các ảnh sau tự dồn lên khít rịt, không bị khoảng trống
+    }
+
+    imageList.push({
+        id: i,
+        src: `f${i}.webp`, 
+        title: `PRODUCT NO.${i}`,
+        link: `https://m.me/ID_FB_CỦA_ÔNG`
+    });
+
+    /* -----------------------------------------------------------
+    // CÁCH B: Nếu ảnh f6 trùng ruột với f5, ông muốn XÓA BỎ HOÀN TOÀN số 6 (Không cho hiện lên web luôn)
+    if (i === 6 || i === 15 || i === 24) {
+        continue; // Gặp các số này code sẽ bỏ qua, không nạp vào web nữa
+    }
+    ----------------------------------------------------------- */
+
+    imageList.push({
+        id: i,
+        src: imageSource, // <--- Nhớ đổi từ `f${i}.webp` thành biến imageSource này nhé
+        title: `PRODUCT NO.${i}`,
+        link: `https://m.me/ID_FB_CỦA_ÔNG`
+    });
+}
+    
+    // 2. Hàm hiển thị sản phẩm
+    function displayProducts(page) {
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = "";
+
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageItems = imageList.slice(startIndex, endIndex);
+
+        pageItems.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            
+            card.innerHTML = `
+                <div class="image-container" onmousemove="zoomImage(event)" onmouseleave="hideLens(event)">
+                    <div class="zoom-lens"></div>
+                    <img src="${item.src}" alt="${item.title}" loading="lazy" 
+                         oncontextmenu="return false;" 
+                         ondragstart="return false;">
+                </div>
+                <div class="product-info">${item.title}</div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // 3. Logic xử lý kính lúp (Zoom) cho ảnh .webp
+    function zoomImage(e) {
+        const container = e.currentTarget;
+        const lens = container.querySelector('.zoom-lens');
+        const img = container.querySelector('img');
+        
+        if (!lens || !img) return;
+
+        lens.style.visibility = 'visible';
+        const rect = container.getBoundingClientRect();
+        
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        let lensX = x - (lens.offsetWidth / 2);
+        let lensY = y - (lens.offsetHeight / 2);
+        
+        if (lensX < 0) lensX = 0;
+        if (lensX > container.offsetWidth - lens.offsetWidth) lensX = container.offsetWidth - lens.offsetWidth;
+        if (lensY < 0) lensY = 0;
+        if (lensY > container.offsetHeight - lens.offsetHeight) lensY = container.offsetHeight - lens.offsetHeight;
+        
+        lens.style.left = lensX + 'px';
+        lens.style.top = lensY + 'px';
+        
+        const zoomLevel = 2.5; 
+        
+        lens.style.backgroundImage = `url('${img.src}')`;
+        lens.style.backgroundSize = `${container.offsetWidth * zoomLevel}px ${container.offsetHeight * zoomLevel}px`;
+        
+        const backgroundX = -((x * zoomLevel) - (lens.offsetWidth / 2));
+        const backgroundY = -((y * zoomLevel) - (lens.offsetHeight / 2));
+        lens.style.backgroundPosition = `${backgroundX}px ${backgroundY}px`;
+    }
+
+    function hideLens(e) {
+        const lens = e.currentTarget.querySelector('.zoom-lens');
+        if (lens) {
+            lens.style.visibility = 'hidden';
+        }
+    }
+
+    // 4. Hàm tạo thanh phân trang số
+    function setupPagination() {
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = "";
+
+        const totalPages = Math.ceil(imageList.length / itemsPerPage);
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.innerText = '«';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePage();
+            }
+        };
+        paginationContainer.appendChild(prevBtn);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            pageBtn.innerText = i;
+            pageBtn.onclick = () => {
+                currentPage = i;
+                updatePage();
+            };
+            paginationContainer.appendChild(pageBtn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.innerText = '»';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePage();
+            }
+        };
+        paginationContainer.appendChild(nextBtn);
+    }
+
+    // Khóa chuột phải trên ảnh
+    document.addEventListener('contextmenu', function(e) {
+        if (e.target.tagName === 'IMG') {
+            e.preventDefault();
+        }
+    });
+
+    function updatePage() {
+        displayProducts(currentPage);
+        setupPagination();
+        window.scrollTo(0, 0); 
+    }
+
+    updatePage();
+</script>
+</body>
+</html>
